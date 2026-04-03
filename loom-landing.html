@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Loom — Where Connections Are Woven</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink:     #1c0e12;
+      --deep:    #2a1018;
+      --wine:    #5c1f30;
+      --blush:   #c97d8a;
+      --rose:    #e8b4b8;
+      --cream:   #f7ede4;
+      --gold:    #c9a05e;
+      --light:   #fdf6f0;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--ink);
+      color: var(--cream);
+      font-family: 'Jost', sans-serif;
+      font-weight: 300;
+      overflow-x: hidden;
+    }
+
+    /* ─── NOISE TEXTURE OVERLAY ─── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 999; opacity: 0.4;
+    }
+
+    /* ─── WOVEN THREAD LINES ─── */
+    .thread-bg {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden;
+    }
+    .thread-bg svg { width: 100%; height: 100%; opacity: 0.06; }
+
+    /* ─── NAV ─── */
+    nav {
+      position: fixed; top: 0; width: 100%; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.4rem 5%;
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(201,160,94,0.15);
+      background: rgba(28,14,18,0.7);
+    }
+    .nav-logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.8rem; font-weight: 300; letter-spacing: 0.15em;
+      color: var(--cream);
+      text-decoration: none;
+    }
+    .nav-logo span { color: var(--gold); }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a {
+      text-decoration: none; color: rgba(247,237,228,0.65);
+      font-size: 0.8rem; letter-spacing: 0.12em; text-transform: uppercase;
+      transition: color 0.3s;
+    }
+    .nav-links a:hover { color: var(--gold); }
+    .nav-cta {
+      background: transparent; border: 1px solid var(--gold);
+      color: var(--gold); padding: 0.5rem 1.4rem;
+      font-family: 'Jost', sans-serif; font-size: 0.75rem;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      cursor: pointer; transition: all 0.3s;
+    }
+    .nav-cta:hover { background: var(--gold); color: var(--ink); }
+
+    /* ─── HERO ─── */
+    .hero {
+      position: relative; min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      text-align: center; padding: 8rem 2rem 4rem;
+      overflow: hidden;
+    }
+    .hero-glow {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 70vw; height: 70vw; max-width: 700px; max-height: 700px;
+      background: radial-gradient(ellipse, rgba(92,31,48,0.55) 0%, transparent 70%);
+      pointer-events: none;
+      animation: pulse 6s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.7; }
+      50% { transform: translate(-50%, -50%) scale(1.08); opacity: 1; }
+    }
+
+    .hero-eyebrow {
+      font-size: 0.72rem; letter-spacing: 0.25em; text-transform: uppercase;
+      color: var(--gold); margin-bottom: 1.5rem;
+      opacity: 0; animation: fadeUp 0.9s 0.2s forwards;
+    }
+    .hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(4.5rem, 12vw, 10rem);
+      font-weight: 300; line-height: 0.9;
+      letter-spacing: -0.01em;
+      opacity: 0; animation: fadeUp 0.9s 0.4s forwards;
+    }
+    .hero-title em {
+      font-style: italic; color: var(--rose);
+      display: block;
+    }
+    .hero-sub {
+      margin-top: 2rem; max-width: 520px; margin-inline: auto;
+      font-size: 1rem; line-height: 1.8; color: rgba(247,237,228,0.65);
+      opacity: 0; animation: fadeUp 0.9s 0.6s forwards;
+    }
+    .hero-actions {
+      margin-top: 3rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;
+      opacity: 0; animation: fadeUp 0.9s 0.8s forwards;
+    }
+    .btn-primary {
+      background: var(--wine); border: 1px solid var(--blush);
+      color: var(--cream); padding: 0.9rem 2.4rem;
+      font-family: 'Jost', sans-serif; font-size: 0.82rem;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      cursor: pointer; transition: all 0.3s; text-decoration: none; display: inline-block;
+    }
+    .btn-primary:hover { background: var(--blush); border-color: var(--blush); color: var(--ink); }
+    .btn-ghost {
+      background: transparent; border: 1px solid rgba(247,237,228,0.25);
+      color: rgba(247,237,228,0.65); padding: 0.9rem 2.4rem;
+      font-family: 'Jost', sans-serif; font-size: 0.82rem;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      cursor: pointer; transition: all 0.3s;
+    }
+    .btn-ghost:hover { border-color: var(--cream); color: var(--cream); }
+
+    .hero-scroll {
+      position: absolute; bottom: 2.5rem; left: 50%; transform: translateX(-50%);
+      display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+      opacity: 0; animation: fadeUp 1s 1.4s forwards;
+    }
+    .hero-scroll span { font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(247,237,228,0.35); }
+    .scroll-line {
+      width: 1px; height: 50px;
+      background: linear-gradient(to bottom, var(--gold), transparent);
+      animation: scrollPulse 2s ease-in-out infinite;
+    }
+    @keyframes scrollPulse {
+      0%, 100% { opacity: 0.4; transform: scaleY(1); }
+      50% { opacity: 1; transform: scaleY(1.2); }
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ─── SECTION BASE ─── */
+    section {
+      position: relative; z-index: 1;
+      padding: 7rem 5%;
+    }
+    .section-label {
+      font-size: 0.68rem; letter-spacing: 0.3em; text-transform: uppercase;
+      color: var(--gold); margin-bottom: 1rem;
+    }
+    .section-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.4rem, 5vw, 4rem);
+      font-weight: 300; line-height: 1.15;
+    }
+    .section-title em { font-style: italic; color: var(--rose); }
+
+    /* ─── PROBLEM SECTION ─── */
+    .problem {
+      background: var(--deep);
+      border-top: 1px solid rgba(201,160,94,0.12);
+      border-bottom: 1px solid rgba(201,160,94,0.12);
+    }
+    .problem-inner {
+      max-width: 1100px; margin: 0 auto;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center;
+    }
+    .problem-text .section-title { margin-bottom: 1.5rem; }
+    .problem-text p {
+      font-size: 1rem; line-height: 1.9; color: rgba(247,237,228,0.65);
+      margin-bottom: 1rem;
+    }
+    .problem-stats {
+      display: flex; flex-direction: column; gap: 1.5rem;
+    }
+    .stat-card {
+      border: 1px solid rgba(201,160,94,0.2);
+      padding: 1.5rem 2rem;
+      background: rgba(92,31,48,0.15);
+      position: relative; overflow: hidden;
+    }
+    .stat-card::before {
+      content: '';
+      position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+      background: var(--gold);
+    }
+    .stat-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 3rem; font-weight: 300; color: var(--rose); line-height: 1;
+    }
+    .stat-desc { font-size: 0.85rem; color: rgba(247,237,228,0.55); margin-top: 0.3rem; letter-spacing: 0.05em; }
+
+    /* ─── HOW LOOM IS DIFFERENT ─── */
+    .diff-section { max-width: 1100px; margin: 0 auto; }
+    .diff-section .section-title { margin-bottom: 0.5rem; }
+    .diff-section .section-sub {
+      font-size: 1rem; color: rgba(247,237,228,0.55); margin-bottom: 4rem; max-width: 600px;
+    }
+    .diff-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1px;
+      border: 1px solid rgba(201,160,94,0.12);
+    }
+    .diff-card {
+      padding: 2.5rem 2rem;
+      background: rgba(28,14,18,0.6);
+      transition: background 0.4s;
+      position: relative; overflow: hidden;
+    }
+    .diff-card:hover { background: rgba(92,31,48,0.25); }
+    .diff-card::after {
+      content: attr(data-num);
+      position: absolute; right: 1rem; bottom: 0.5rem;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 5rem; font-weight: 300;
+      color: rgba(201,160,94,0.06);
+      line-height: 1; pointer-events: none;
+    }
+    .diff-icon { font-size: 1.8rem; margin-bottom: 1.2rem; }
+    .diff-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.5rem; font-weight: 400; margin-bottom: 0.7rem; color: var(--cream);
+    }
+    .diff-body { font-size: 0.88rem; line-height: 1.8; color: rgba(247,237,228,0.55); }
+    .diff-tag {
+      display: inline-block; margin-top: 1rem;
+      font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase;
+      border: 1px solid rgba(201,160,94,0.35); color: var(--gold);
+      padding: 0.25rem 0.7rem;
+    }
+
+    /* ─── FEATURES ─── */
+    .features-bg {
+      background: var(--deep);
+      border-top: 1px solid rgba(201,160,94,0.12);
+    }
+    .features-inner { max-width: 1100px; margin: 0 auto; }
+    .features-header { text-align: center; margin-bottom: 5rem; }
+    .features-header .section-title { margin-bottom: 1rem; }
+    .features-header p { font-size: 1rem; color: rgba(247,237,228,0.55); max-width: 550px; margin: 0 auto; }
+
+    .feature-row {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center;
+      margin-bottom: 6rem;
+    }
+    .feature-row:last-child { margin-bottom: 0; }
+    .feature-row.reverse .feature-visual { order: -1; }
+
+    .feature-text .feature-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 4.5rem; font-weight: 300;
+      color: rgba(201,160,94,0.18); line-height: 1; margin-bottom: -0.5rem;
+    }
+    .feature-text h3 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2.2rem; font-weight: 300; margin-bottom: 1rem; color: var(--cream);
+    }
+    .feature-text p { font-size: 0.95rem; line-height: 1.9; color: rgba(247,237,228,0.6); margin-bottom: 1rem; }
+    .feature-bullets { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+    .feature-bullets li {
+      font-size: 0.85rem; color: rgba(247,237,228,0.6);
+      padding-left: 1.2rem; position: relative;
+    }
+    .feature-bullets li::before {
+      content: '—'; position: absolute; left: 0; color: var(--gold);
+    }
+
+    .feature-visual {
+      background: rgba(92,31,48,0.12);
+      border: 1px solid rgba(201,160,94,0.15);
+      border-radius: 2px; aspect-ratio: 4/3;
+      display: flex; align-items: center; justify-content: center;
+      position: relative; overflow: hidden;
+    }
+    .feature-visual .mock {
+      width: 75%; aspect-ratio: 9/16;
+      background: var(--deep);
+      border: 1px solid rgba(201,160,94,0.25);
+      border-radius: 16px; padding: 1rem;
+      display: flex; flex-direction: column; gap: 0.6rem;
+      position: relative; box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    }
+    .mock-bar {
+      height: 6px; border-radius: 3px; background: rgba(247,237,228,0.08);
+    }
+    .mock-bar.gold { background: rgba(201,160,94,0.5); width: 50%; }
+    .mock-bar.rose { background: rgba(232,180,184,0.4); width: 70%; }
+    .mock-bar.sm { width: 40%; }
+    .mock-avatar {
+      width: 44px; height: 44px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--wine), var(--blush));
+      margin-bottom: 0.3rem;
+    }
+    .mock-notif {
+      background: rgba(201,160,94,0.15);
+      border: 1px solid rgba(201,160,94,0.3);
+      border-radius: 8px; padding: 0.6rem 0.8rem;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .mock-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); flex-shrink: 0; }
+    .mock-notif-text { font-size: 0.55rem; color: var(--cream); letter-spacing: 0.03em; line-height: 1.4; }
+    .mock-qa {
+      background: rgba(92,31,48,0.25);
+      border: 1px solid rgba(201,160,94,0.2);
+      border-radius: 8px; padding: 0.6rem 0.8rem;
+    }
+    .mock-qa-label { font-size: 0.45rem; color: var(--gold); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 0.25rem; }
+    .mock-qa-q { font-size: 0.5rem; color: var(--cream); line-height: 1.4; }
+    .mock-progress {
+      margin-top: auto; background: rgba(247,237,228,0.06); border-radius: 3px; height: 4px; overflow: hidden;
+    }
+    .mock-progress-fill {
+      height: 100%; border-radius: 3px;
+      background: linear-gradient(to right, var(--wine), var(--blush));
+      width: 60%;
+    }
+
+    /* ─── INTIMACY LEVELS ─── */
+    .levels-section {
+      max-width: 900px; margin: 0 auto; text-align: center;
+    }
+    .levels-section .section-title { margin-bottom: 0.8rem; }
+    .levels-section p { font-size: 1rem; color: rgba(247,237,228,0.55); margin-bottom: 4rem; }
+    .levels-track {
+      display: flex; align-items: stretch; gap: 0; position: relative;
+    }
+    .levels-track::before {
+      content: '';
+      position: absolute; top: 28px; left: 5%; right: 5%; height: 1px;
+      background: linear-gradient(to right, transparent, var(--wine), var(--blush), var(--gold), transparent);
+    }
+    .level-item {
+      flex: 1; display: flex; flex-direction: column; align-items: center;
+      padding: 0 0.5rem; position: relative;
+    }
+    .level-dot {
+      width: 56px; height: 56px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem; margin-bottom: 1rem; z-index: 1;
+      border: 1px solid rgba(201,160,94,0.3);
+      background: var(--deep);
+      transition: all 0.3s;
+    }
+    .level-item:nth-child(1) .level-dot { background: rgba(42,16,24,0.8); border-color: rgba(201,160,94,0.2); }
+    .level-item:nth-child(2) .level-dot { background: rgba(60,20,32,0.8); border-color: rgba(201,160,94,0.3); }
+    .level-item:nth-child(3) .level-dot { background: rgba(92,31,48,0.6); border-color: rgba(201,160,94,0.5); }
+    .level-item:nth-child(4) .level-dot { background: rgba(201,127,138,0.3); border-color: var(--blush); }
+    .level-item:nth-child(5) .level-dot { background: rgba(201,160,94,0.2); border-color: var(--gold); box-shadow: 0 0 20px rgba(201,160,94,0.3); }
+    .level-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1rem; font-weight: 400; color: var(--cream); margin-bottom: 0.3rem;
+    }
+    .level-desc { font-size: 0.72rem; color: rgba(247,237,228,0.45); line-height: 1.5; }
+
+    /* ─── FEATURE SHEET / TABLE ─── */
+    .sheet-section {
+      background: var(--deep);
+      border-top: 1px solid rgba(201,160,94,0.12);
+    }
+    .sheet-inner { max-width: 1000px; margin: 0 auto; }
+    .sheet-inner .section-title { margin-bottom: 0.5rem; }
+    .sheet-inner .section-sub { color: rgba(247,237,228,0.5); font-size: 0.95rem; margin-bottom: 3rem; }
+
+    .compare-table { width: 100%; border-collapse: collapse; }
+    .compare-table th {
+      padding: 0.9rem 1.2rem; text-align: left;
+      font-size: 0.68rem; letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--gold); border-bottom: 1px solid rgba(201,160,94,0.2);
+      font-weight: 400;
+    }
+    .compare-table th.loom-col {
+      background: rgba(92,31,48,0.2);
+      border-left: 1px solid rgba(201,160,94,0.2);
+      border-right: 1px solid rgba(201,160,94,0.2);
+    }
+    .compare-table td {
+      padding: 1rem 1.2rem; font-size: 0.88rem;
+      color: rgba(247,237,228,0.65); border-bottom: 1px solid rgba(247,237,228,0.05);
+    }
+    .compare-table td.feature-name { color: var(--cream); font-weight: 400; }
+    .compare-table td.loom-col {
+      background: rgba(92,31,48,0.1);
+      border-left: 1px solid rgba(201,160,94,0.15);
+      border-right: 1px solid rgba(201,160,94,0.15);
+      color: var(--cream);
+    }
+    .compare-table tr:hover td { background: rgba(255,255,255,0.02); }
+    .compare-table tr:hover td.loom-col { background: rgba(92,31,48,0.2); }
+    .yes { color: #7ecb8a; font-size: 1rem; }
+    .no { color: rgba(247,237,228,0.2); font-size: 1rem; }
+    .partial { color: var(--gold); font-size: 0.75rem; }
+
+    /* ─── CTA ─── */
+    .cta-section {
+      text-align: center; max-width: 700px; margin: 0 auto;
+    }
+    .cta-section .section-label { margin-bottom: 1.5rem; }
+    .cta-section .section-title { margin-bottom: 1.5rem; }
+    .cta-section p { color: rgba(247,237,228,0.55); font-size: 1rem; line-height: 1.8; margin-bottom: 3rem; }
+    .cta-form {
+      display: flex; gap: 0; max-width: 420px; margin: 0 auto;
+    }
+    .cta-input {
+      flex: 1; background: rgba(247,237,228,0.05);
+      border: 1px solid rgba(247,237,228,0.15); border-right: none;
+      color: var(--cream); padding: 0.9rem 1.2rem;
+      font-family: 'Jost', sans-serif; font-size: 0.85rem;
+      outline: none;
+    }
+    .cta-input::placeholder { color: rgba(247,237,228,0.3); }
+    .cta-input:focus { border-color: rgba(201,160,94,0.4); }
+    .cta-submit {
+      background: var(--wine); border: 1px solid var(--blush);
+      color: var(--cream); padding: 0.9rem 1.6rem;
+      font-family: 'Jost', sans-serif; font-size: 0.78rem;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      cursor: pointer; transition: all 0.3s; white-space: nowrap;
+    }
+    .cta-submit:hover { background: var(--blush); color: var(--ink); }
+    .cta-note { font-size: 0.72rem; color: rgba(247,237,228,0.3); margin-top: 1rem; letter-spacing: 0.05em; }
+
+    /* ─── FOOTER ─── */
+    footer {
+      position: relative; z-index: 1;
+      border-top: 1px solid rgba(201,160,94,0.12);
+      padding: 2.5rem 5%;
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: gap;
+      gap: 1rem;
+    }
+    .footer-logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.4rem; font-weight: 300; letter-spacing: 0.15em;
+    }
+    .footer-logo span { color: var(--gold); }
+    .footer-links { display: flex; gap: 1.5rem; }
+    .footer-links a {
+      font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase;
+      color: rgba(247,237,228,0.3); text-decoration: none; transition: color 0.3s;
+    }
+    .footer-links a:hover { color: var(--cream); }
+    .footer-copy { font-size: 0.72rem; color: rgba(247,237,228,0.2); }
+
+    /* ─── DIVIDER ─── */
+    .divider {
+      width: 60px; height: 1px;
+      background: linear-gradient(to right, var(--gold), transparent);
+      margin: 1.5rem 0;
+    }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 768px) {
+      .problem-inner { grid-template-columns: 1fr; gap: 3rem; }
+      .feature-row { grid-template-columns: 1fr; gap: 2.5rem; }
+      .feature-row.reverse .feature-visual { order: 0; }
+      .levels-track { flex-direction: column; align-items: flex-start; gap: 1.5rem; }
+      .levels-track::before { display: none; }
+      .level-item { flex-direction: row; gap: 1rem; }
+      .nav-links { display: none; }
+      .compare-table { font-size: 0.8rem; }
+      .compare-table td, .compare-table th { padding: 0.7rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Thread BG -->
+<div class="thread-bg">
+  <svg viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="tg" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#c9a05e"/>
+        <stop offset="100%" stop-color="#c97d8a"/>
+      </linearGradient>
+    </defs>
+    <!-- Woven diagonal threads -->
+    <line x1="0" y1="200" x2="1440" y2="700" stroke="url(#tg)" stroke-width="0.5"/>
+    <line x1="0" y1="350" x2="1440" y2="850" stroke="url(#tg)" stroke-width="0.5"/>
+    <line x1="0" y1="0" x2="1440" y2="500" stroke="url(#tg)" stroke-width="0.5"/>
+    <line x1="200" y1="0" x2="1440" y2="650" stroke="url(#tg)" stroke-width="0.3"/>
+    <line x1="400" y1="0" x2="1440" y2="700" stroke="url(#tg)" stroke-width="0.3"/>
+    <line x1="1440" y1="100" x2="0" y2="600" stroke="url(#tg)" stroke-width="0.5"/>
+    <line x1="1440" y1="300" x2="0" y2="800" stroke="url(#tg)" stroke-width="0.3"/>
+    <line x1="1440" y1="0" x2="200" y2="900" stroke="url(#tg)" stroke-width="0.4"/>
+    <!-- Grid weave -->
+    <line x1="0" y1="450" x2="1440" y2="450" stroke="url(#tg)" stroke-width="0.2" stroke-dasharray="4 12"/>
+    <line x1="720" y1="0" x2="720" y2="900" stroke="url(#tg)" stroke-width="0.2" stroke-dasharray="4 12"/>
+  </svg>
+</div>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">L<span>o</span>om</a>
+  <ul class="nav-links">
+    <li><a href="#features">Features</a></li>
+    <li><a href="#difference">Difference</a></li>
+    <li><a href="#levels">Levels</a></li>
+    <li><a href="#compare">Compare</a></li>
+  </ul>
+  <button class="nav-cta">Join Waitlist</button>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-glow"></div>
+  <div style="position:relative; z-index:1;">
+    <p class="hero-eyebrow">A new way to connect</p>
+    <h1 class="hero-title">
+      Where threads
+      <em>interweave.</em>
+    </h1>
+    <p class="hero-sub">
+      Loom doesn't make you wait in silence. The moment you're interested,
+      they know. Real signals. Meaningful conversations. Genuine connection.
+    </p>
+    <div class="hero-actions">
+      <a href="#waitlist" class="btn-primary">Get Early Access</a>
+      <button class="btn-ghost" onclick="document.getElementById('features').scrollIntoView({behavior:'smooth'})">See How It Works</button>
+    </div>
+  </div>
+  <div class="hero-scroll">
+    <div class="scroll-line"></div>
+    <span>Scroll</span>
+  </div>
+</section>
+
+<!-- PROBLEM -->
+<section class="problem">
+  <div class="problem-inner">
+    <div class="problem-text">
+      <p class="section-label">The Problem</p>
+      <h2 class="section-title">
+        Dating apps are
+        <em>designed to keep you waiting</em>
+      </h2>
+      <div class="divider"></div>
+      <p>You see someone. You feel something. You swipe right. And then… nothing. You're left wondering, hoping, refreshing. Meanwhile, they have no idea you exist.</p>
+      <p>Match culture rewards patience over intention. It turns genuine interest into a silent, one-sided guessing game. Loom changes that from the very first swipe.</p>
+    </div>
+    <div class="problem-stats">
+      <div class="stat-card">
+        <div class="stat-num">78%</div>
+        <div class="stat-desc">of users cite "no response after matching" as their #1 frustration</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">56%</div>
+        <div class="stat-desc">delete their dating apps within the first 3 months due to disengagement</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">&lt; 1%</div>
+        <div class="stat-desc">of right-swipes on major apps result in meaningful conversation</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT MAKES LOOM DIFFERENT -->
+<section id="difference">
+  <div class="diff-section">
+    <p class="section-label">Our Difference</p>
+    <h2 class="section-title">Not another swipe app. <em>A new standard.</em></h2>
+    <p class="section-sub">Loom replaces passive waiting with active signals, structured connection, and progressive intimacy.</p>
+    <div class="diff-grid">
+      <div class="diff-card" data-num="01">
+        <div class="diff-icon">🔔</div>
+        <h3 class="diff-title">Signal-First Notification</h3>
+        <p class="diff-body">When you swipe right, the other person receives a gentle notification — "Someone is interested in you." No name. No pressure. Just a signal that creates real anticipation and curiosity.</p>
+        <span class="diff-tag">Exclusive to Loom</span>
+      </div>
+      <div class="diff-card" data-num="02">
+        <div class="diff-icon">💬</div>
+        <h3 class="diff-title">Structured Q&A Icebreaker</h3>
+        <p class="diff-body">After a match, instead of the dreaded "hey" opener, both users answer fun, thoughtfully curated questions simultaneously — revealing personality before small talk.</p>
+        <span class="diff-tag">Conversation-first</span>
+      </div>
+      <div class="diff-card" data-num="03">
+        <div class="diff-icon">🗓️</div>
+        <h3 class="diff-title">Shared Schedule Sync</h3>
+        <p class="diff-body">Share when you're free without giving away your whole calendar. Loom overlays availability to surface natural windows for a first call or date — removing the "we should meet up sometime" dead-end.</p>
+        <span class="diff-tag">Action over intent</span>
+      </div>
+      <div class="diff-card" data-num="04">
+        <div class="diff-icon">⏳</div>
+        <h3 class="diff-title">Time-Gated Deepening</h3>
+        <p class="diff-body">Features and levels unlock over time — not by paying. The longer you genuinely engage, the more you can share. This prevents the dump-everything-upfront culture and builds real anticipation.</p>
+        <span class="diff-tag">Depth by design</span>
+      </div>
+      <div class="diff-card" data-num="05">
+        <div class="diff-icon">🧵</div>
+        <h3 class="diff-title">Thread Score</h3>
+        <p class="diff-body">A shared compatibility metric that grows as you interact — not based on looks, but on shared interests, response quality, and schedule alignment. You can see your thread strengthening.</p>
+        <span class="diff-tag">Meaningful metrics</span>
+      </div>
+      <div class="diff-card" data-num="06">
+        <div class="diff-icon">🌿</div>
+        <h3 class="diff-title">Low-Pressure Mode</h3>
+        <p class="diff-body">Toggle "Slow Loom" to indicate you want a gradual connection. Both users must agree to pace. No ghosting timers, no pressure. Just organic, mutual comfort-building.</p>
+        <span class="diff-tag">Consent-aware</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES DEEP DIVE -->
+<section class="features-bg" id="features">
+  <div class="features-inner">
+    <div class="features-header">
+      <p class="section-label">Feature Deep Dive</p>
+      <h2 class="section-title">Built layer <em>by layer</em></h2>
+      <p>Every feature is intentional. Every step moves you closer to someone real.</p>
+    </div>
+
+    <!-- Feature 1 -->
+    <div class="feature-row">
+      <div class="feature-text">
+        <div class="feature-num">01</div>
+        <h3>Swipe Right, They Know</h3>
+        <p>The moment you swipe right, Loom sends an anonymous "someone is interested" notification to the other person. They don't know who — yet. This creates a beautiful loop of curiosity that makes them visit more profiles, including yours.</p>
+        <ul class="feature-bullets">
+          <li>Anonymous interest notification sent instantly</li>
+          <li>Recipient sees "1 person is interested in you"</li>
+          <li>Mutual swipe = match with bonus XP</li>
+          <li>Drives organic profile visits and real attention</li>
+        </ul>
+      </div>
+      <div class="feature-visual">
+        <div class="mock">
+          <div class="mock-avatar"></div>
+          <div class="mock-bar rose" style="width:65%"></div>
+          <div class="mock-bar" style="width:45%"></div>
+          <div style="height:0.5rem"></div>
+          <div class="mock-notif">
+            <div class="mock-dot"></div>
+            <div class="mock-notif-text">Someone is interested in you.<br><span style="color:rgba(201,160,94,0.8)">Tap to discover who →</span></div>
+          </div>
+          <div class="mock-bar sm" style="margin-top:auto; width:80%; background:rgba(232,180,184,0.15)"></div>
+          <div class="mock-progress"><div class="mock-progress-fill"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Feature 2 -->
+    <div class="feature-row reverse">
+      <div class="feature-text">
+        <div class="feature-num">02</div>
+        <h3>Interactive Q&A After Match</h3>
+        <p>After matching, both users receive the same 3 questions — answered simultaneously, revealed together. It's a shared moment that breaks the ice without awkwardness and shows character before conversation.</p>
+        <ul class="feature-bullets">
+          <li>Questions change weekly — always fresh, never stale</li>
+          <li>Both answer before seeing each other's response</li>
+          <li>Answers form a shared "connection card"</li>
+          <li>Great openers are auto-suggested based on answers</li>
+        </ul>
+      </div>
+      <div class="feature-visual">
+        <div class="mock">
+          <div class="mock-bar gold" style="width:100%; margin-bottom:0.3rem"></div>
+          <div class="mock-bar" style="width:55%"></div>
+          <div style="height:0.4rem"></div>
+          <div class="mock-qa">
+            <div class="mock-qa-label">Match Q&A — Round 1</div>
+            <div class="mock-qa-q">"If your life was a movie genre, what would it be and why?"</div>
+          </div>
+          <div style="height:0.3rem"></div>
+          <div class="mock-bar" style="height:28px; border-radius:6px; background:rgba(247,237,228,0.04); border:1px solid rgba(247,237,228,0.08)"></div>
+          <div class="mock-bar sm" style="width:90%; margin-top:0.4rem; background:rgba(92,31,48,0.4); height:20px; border-radius:4px"></div>
+          <div class="mock-bar" style="width:30%; margin-top:auto; background:rgba(201,160,94,0.3); height:16px; border-radius:3px"></div>
+          <div class="mock-progress"><div class="mock-progress-fill" style="width:30%"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Feature 3 -->
+    <div class="feature-row">
+      <div class="feature-text">
+        <div class="feature-num">03</div>
+        <h3>Schedule Sync & Time Windows</h3>
+        <p>Both users share general availability — morning, afternoon, evening — for each day of the week. Loom surfaces the overlap and suggests a "connection window" — a natural time for a call, voice note, or real-world date.</p>
+        <ul class="feature-bullets">
+          <li>No full calendar access — just simple time slots</li>
+          <li>Loom finds mutual free windows automatically</li>
+          <li>Built-in voice/video call booking within the app</li>
+          <li>Reminder nudge when window approaches</li>
+        </ul>
+      </div>
+      <div class="feature-visual">
+        <div class="mock">
+          <div class="mock-bar gold" style="width:80%; margin-bottom:0.5rem"></div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px;">
+            <div style="background:rgba(92,31,48,0.4); border-radius:4px; height:18px; font-size:0.4rem; display:flex; align-items:center; justify-content:center; color:rgba(247,237,228,0.5)">Mon AM</div>
+            <div style="background:rgba(201,160,94,0.2); border-radius:4px; height:18px; border:1px solid rgba(201,160,94,0.4); font-size:0.4rem; display:flex; align-items:center; justify-content:center; color:var(--gold)">✓ Both free</div>
+            <div style="background:rgba(247,237,228,0.04); border-radius:4px; height:18px; font-size:0.4rem; display:flex; align-items:center; justify-content:center; color:rgba(247,237,228,0.2)">Mon PM</div>
+            <div style="background:rgba(92,31,48,0.4); border-radius:4px; height:18px; font-size:0.4rem; display:flex; align-items:center; justify-content:center; color:rgba(247,237,228,0.4)">Tue AM</div>
+            <div style="background:rgba(201,160,94,0.2); border-radius:4px; height:18px; border:1px solid rgba(201,160,94,0.4); font-size:0.4rem; display:flex; align-items:center; justify-content:center; color:var(--gold)">✓ Both free</div>
+            <div style="background:rgba(247,237,228,0.04); border-radius:4px; height:18px; font-size:0.4rem; display:flex; align-items:center; justify-content:center; color:rgba(247,237,228,0.2)">Tue PM</div>
+          </div>
+          <div style="height:0.4rem"></div>
+          <div style="background:rgba(92,31,48,0.3); border:1px solid rgba(201,160,94,0.3); border-radius:6px; padding:0.4rem 0.6rem; font-size:0.5rem; color:var(--cream)">
+            📅 Suggested: Monday Morning<br>
+            <span style="color:rgba(201,160,94,0.8)">Book a 15-min call →</span>
+          </div>
+          <div class="mock-progress" style="margin-top:auto"><div class="mock-progress-fill" style="width:55%"></div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- INTIMACY LEVELS -->
+<section id="levels">
+  <div class="levels-section">
+    <p class="section-label">Progressive Intimacy</p>
+    <h2 class="section-title">Connection deepens <em>as you do</em></h2>
+    <p>Loom's five levels unlock naturally through genuine engagement — not time alone, but quality of interaction. Each level reveals something new about your match.</p>
+    <div class="levels-track">
+      <div class="level-item">
+        <div class="level-dot">🌱</div>
+        <div>
+          <div class="level-name">Thread</div>
+          <div class="level-desc">Anonymous signal, profile view, swipe match</div>
+        </div>
+      </div>
+      <div class="level-item">
+        <div class="level-dot">🌿</div>
+        <div>
+          <div class="level-name">Weave</div>
+          <div class="level-desc">Q&A revealed, text chat unlocked</div>
+        </div>
+      </div>
+      <div class="level-item">
+        <div class="level-dot">🌸</div>
+        <div>
+          <div class="level-name">Knot</div>
+          <div class="level-desc">Voice notes, schedule sync, deeper Q&A</div>
+        </div>
+      </div>
+      <div class="level-item">
+        <div class="level-dot">🌺</div>
+        <div>
+          <div class="level-name">Braid</div>
+          <div class="level-desc">Video calls, photo sharing, shared playlist</div>
+        </div>
+      </div>
+      <div class="level-item">
+        <div class="level-dot">✨</div>
+        <div>
+          <div class="level-name">Loom</div>
+          <div class="level-desc">Full connection — real details, date planning</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COMPARE TABLE -->
+<section class="sheet-section" id="compare">
+  <div class="sheet-inner">
+    <p class="section-label">Feature Sheet</p>
+    <h2 class="section-title">Loom vs <em>Everyone Else</em></h2>
+    <p class="section-sub">Here's exactly what sets Loom apart from the apps you've already tried and deleted.</p>
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th style="width:34%">Feature</th>
+          <th class="loom-col" style="width:22%">🧵 Loom</th>
+          <th style="width:22%">Tinder / Bumble</th>
+          <th style="width:22%">Hinge</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="feature-name">Interest notification before match</td>
+          <td class="loom-col"><span class="yes">✓</span> Anonymous alert</td>
+          <td><span class="no">✗</span></td>
+          <td><span class="no">✗</span></td>
+        </tr>
+        <tr>
+          <td class="feature-name">Structured Q&A icebreaker post-match</td>
+          <td class="loom-col"><span class="yes">✓</span> Both answer first</td>
+          <td><span class="no">✗</span></td>
+          <td><span class="partial">~ Prompts only</span></td>
+        </tr>
+        <tr>
+          <td class="feature-name">Schedule / availability sync</td>
+          <td class="loom-col"><span class="yes">✓</span> Time-slot overlap</td>
+          <td><span class="no">✗</span></td>
+          <td><span class="no">✗</span></td>
+        </tr>
+        <tr>
+          <td class="feature-name">Progressive intimacy levels</td>
+          <td class="loom-col"><span class="yes">✓</span> 5 depth stages</td>
+          <td><span class="no">✗</span></td>
+          <td><span class="no">✗</span></td>
+        </tr>
+        <tr>
+          <td class="feature-name">Time-gated feature unlocks (no paywall)</td>
+          <td class="loom-col"><span class="yes">✓</span> Earned by engagement</td>
+          <td><span class="no">✗ Paid only</span></td>
+          <td><span class="no">✗ Paid only</span></td>
+        </tr>
+        <tr>
+          <td class="feature-name">Thread compatibility score</td>
+          <td class="loom-col"><span class="yes">✓</span> Real-time metric</td>
+          <td><span class="no">✗</span></td>
+          <td><span class="partial">~ Basic %</span></td>
+        </tr>
+        <tr>
+          <td class="feature-name">Slow / low-pressure mode</td>
+          <td class="loom-col"><span class="yes">✓</span> Mutual opt-in</td>
+          <td><span class="no">✗</span></td>
+          <td><span class="no">✗</span></td>
+        </tr>
+        <tr>
+          <td class="feature-name">In-app voice/video date booking</td>
+          <td class="loom-col"><span class="yes">✓</span> Integrated</td>
+          <td><span class="partial">~ Video only</span></td>
+          <td><span class="partial">~ Video only</span></td>
+        </tr>
+        <tr>
+          <td class="feature-name">Anti-ghosting design</td>
+          <td class="loom-col"><span class="yes">✓</span> Gentle nudges</td>
+          <td><span class="no">✗</span></td>
+          <td><span class="partial">~ Expire timer</span></td>
+        </tr>
+        <tr>
+          <td class="feature-name">Consent-aware pacing</td>
+          <td class="loom-col"><span class="yes">✓</span> Core feature</td>
+          <td><span class="no">✗</span></td>
+          <td><span class="no">✗</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- CTA / WAITLIST -->
+<section id="waitlist">
+  <div class="cta-section">
+    <p class="section-label">Join the Waitlist</p>
+    <h2 class="section-title">Be the first to <em>weave a connection</em></h2>
+    <p>Loom is launching in early access to a limited group of founding users. Get in first — and help shape the future of how people meet.</p>
+    <div class="cta-form">
+      <input type="email" class="cta-input" placeholder="Your email address" />
+      <button class="cta-submit">Reserve Spot</button>
+    </div>
+    <p class="cta-note">No spam. No pressure. Cancel anytime. — That's kind of our whole thing.</p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">L<span>o</span>om</div>
+  <div class="footer-links">
+    <a href="#">Privacy</a>
+    <a href="#">Terms</a>
+    <a href="#">Press</a>
+    <a href="#">Contact</a>
+  </div>
+  <div class="footer-copy">© 2025 Loom Technologies. All rights reserved.</div>
+</footer>
+
+<script>
+  // Smooth scroll for anchor links
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const target = document.querySelector(a.getAttribute('href'));
+      if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth' }); }
+    });
+  });
+
+  // Intersection observer for section fade-ins
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.style.opacity = '1';
+        e.target.style.transform = 'translateY(0)';
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.diff-card, .feature-row, .level-item, .stat-card').forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(24px)';
+    el.style.transition = 'opacity 0.7s ease, transform 0.7s ease';
+    observer.observe(el);
+  });
+
+  // CTA button
+  document.querySelector('.cta-submit').addEventListener('click', () => {
+    const input = document.querySelector('.cta-input');
+    if (input.value.includes('@')) {
+      input.value = '';
+      input.placeholder = '✓ You\'re on the list!';
+      input.style.borderColor = 'rgba(201,160,94,0.6)';
+    }
+  });
+
+  // Nav CTA
+  document.querySelector('.nav-cta').addEventListener('click', () => {
+    document.getElementById('waitlist').scrollIntoView({ behavior: 'smooth' });
+  });
+</script>
+</body>
+</html>
