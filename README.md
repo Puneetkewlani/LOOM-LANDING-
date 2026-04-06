@@ -174,4 +174,4 @@ Currently a private concept. Contributions will open post-MVP.
 
 ## © License
 
-© 2025 Loom Technologies — All Rights Reserved
+© 2026 Loom Technologies — All Rights Reserved
